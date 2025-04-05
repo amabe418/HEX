@@ -8,7 +8,9 @@ class HexBoard:
          
     def clone(self) -> "HexBoard":
         """Devuelve una copia del tablero actual"""
-        pass  # Aquí luego puedes implementar la clonación del tablero
+        board =  HexBoard(self.size)
+        board.board = self.board
+        return board
 
     def place_piece(self, row: int, col: int, player_id: int) -> bool: #si la casilla esta vacia, la marca con el id del jugador que la selecciono y devuelve true, si no, pues nadota.
         """Coloca una ficha si la casilla está vacía."""
@@ -25,8 +27,7 @@ class HexBoard:
                 if self.board[i][j] is 0:
                     result.append((i,j))
         return result
-        
-
+   
     def check_connection(self, player_id: int) -> bool: # para esto, teoricamente, se implementa un bfs con dos nodos fantasma, cada uno en los extremos del tablero correspondientes al jugador.
         """Verifica si el jugador ha conectado sus dos lados"""
 
@@ -49,9 +50,7 @@ class HexBoard:
                    qeue.append(i)
         
         return False
-       
-
-
+  
     def adj(self, row: int = 0, col:int = 0, id: int = 0 ):
         """Devuelve una lista de las casillas adyacentes a la casilla que se introduzca como argumento"""
         if id is 1:
