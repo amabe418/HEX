@@ -5,8 +5,16 @@ class Player:
         self.player_id = player_id  # Tu identificador (1 o 2)
 
     def play(self, board: HexBoard) -> tuple:
-        raise NotImplementedError("¡Implementa este método!")
+       best_score = float('-inf')
+       best_move = None
+       for move in board.get_possible_moves():
+           new_board = board.clone()
+           new_board.place_piece(self.player_id)
+           score = self.minimax(new_board, float('-inf'), float('inf'), True,5)
+           if score> best_score: best_score = score, best_move = move
 
+       return best_move
+       
     def evaluate(self, board: HexBoard) -> float: 
         """Evalua el estado del tablero y devuelve el puntaje"""
         player_distance = board.heuristic_value_dijkstra(self.player_id)
