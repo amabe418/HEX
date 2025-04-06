@@ -1,5 +1,6 @@
 import numpy
 import collections
+import heapq
 class HexBoard:
     """ En esta clase se implementa el tablero y los metodos necesarios para su manejo durante el juego"""
     def __init__(self, size: int):
@@ -72,3 +73,36 @@ class HexBoard:
             
             elif col > 0 : return [(row, col + 1) ,(row + 1, col) , (row + 1, col - 1) ] #fila igual a cero, pero columna mayor que cero
             return [(row, col + 1) ,(row + 1, col) ] #fila y columna iguales a cero
+        
+    def heuristic_value_dijkstra(self, player_id: int) -> int:
+        """Devuelve el valor del estado del tablero(el menor camino para unir los extremos)"""
+        size = self.size
+        distance = numpy.full((size,size), float('inf')) #matris de distancias
+        visited = numpy.full((size,size), False) 
+        heap=[]
+
+        for position in self.adj(id=player_id): #esto es parecido al check connection, dependiendo del jugador se le dan los adyacentes correspondientes
+            row, col = position
+            if self.board[row][col] == player_id: distance[row][col]=0
+            if self.board[row][col] == 0 : distance[row][col] = 1
+            heapq.heappush(heap,(distance[row][col],position))
+
+        while heap:
+            cost, position = heapq.heappop(heap)
+            row, col = position
+            visited[row][col] = True
+            if player_id == 1 and col == size - 1 : return cost
+            if player_id == 2 and row == size - 1 : return cost
+
+            for position_ in self.adj(row = row, col = col):
+                roww, coll = position_
+                if  visited[roww][coll] or self.board[roww][coll] == 3-player_id: continue
+
+                new_cost = cost if self.board[roww][coll] == player_id else cost+1
+                if new_cost < distance[roww][coll]: heapq.heappush(heap, (new_cost, position_)), distance[roww][coll]= new_cost
+
+            
+        return float('inf') #si no devuelve nada por alla es porque no hay camino.
+
+
+        

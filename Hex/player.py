@@ -6,3 +6,4 @@ class Player:
 
     def play(self, board: HexBoard) -> tuple:
         raise NotImplementedError("¡Implementa este método!")
+    
