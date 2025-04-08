@@ -9,9 +9,11 @@ class Player:
        best_move = None
        for move in board.get_possible_moves():
            new_board = board.clone()
-           new_board.place_piece(self.player_id)
-           score = self.minimax(new_board, float('-inf'), float('inf'), True,5)
-           if score> best_score: best_score = score, best_move = move
+           new_board.place_piece(move[0], move[1], self.player_id)
+           score = self.minimax(new_board, float('-inf'), float('inf'), True,2)
+           if score > best_score: 
+            best_score = score
+            best_move = move
 
        return best_move
        
@@ -31,27 +33,27 @@ class Player:
         player = self.player_id if maximizing else 3 - self.player_id
 
         if maximizing:
-            max_evaluation = float('-inf')
+            best_evaluation = float('-inf')
             for move in moves:
                 row, col = move
                 new_board = board.clone()
                 new_board.place_piece(row, col, player)
                 evaluation = self.minimax(new_board, alpha, beta, False, depth - 1)
-                max_evaluation = max(max_evaluation, evaluation)
+                best_evaluation = max(best_evaluation, evaluation)
                 alpha = max(alpha, evaluation)
-                if beta<= alpha: break
-            return max_evaluation
+                if beta <= alpha: break
+           
         
         else:
-            min_evaluation = float('inf')
+            best_evaluation = float('inf')
             for move in moves:
                 row, col = move
                 new_board = board.clone()
                 new_board.place_piece(row, col, player)
                 evaluation = self.minimax(new_board, alpha, beta, True, depth - 1)
-                min_evaluation = min(evaluation, min_evaluation)
+                best_evaluation = min(evaluation, best_evaluation)
                 beta = min(beta, evaluation)
-                if beta<= alpha: break
-                return min_evaluation
+                if beta <= alpha: break
+        return best_evaluation
             
 
