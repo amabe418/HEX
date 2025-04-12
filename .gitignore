@@ -3,3 +3,16 @@ Primer Proyecto IA.md
 Hex/Visualizer.py
 Hex/hex.py
 Hex/Visualizer.py
+Hex/__pycache__/HexBoard.cpython-313.pyc
+Hex/__pycache__/hybrid.cpython-313.pyc
+Hex/__pycache__/mcts.cpython-313.pyc
+Hex/__pycache__/mcts_player.cpython-313.pyc
+Hex/__pycache__/Player.cpython-313.pyc
+Hex/__pycache__/Smart_player.cpython-313.pyc
+Hex/Hybrid.py
+Hex/MCTS.py
+Hex/__pycache__/HexBoard.cpython-313.pyc
+Hex/__pycache__/Player.cpython-313.pyc
+Hex/player.py
+
+Hex/player.py

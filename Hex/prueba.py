@@ -3,7 +3,9 @@ import Player
 import os
 import re
 import random
-
+import Hybrid
+import time
+import Smart_player
 
 # region GLOBALS
 
@@ -94,7 +96,7 @@ def human_vs_ai():
     N = get_size()
     board = HexBoard.HexBoard(N)
     human = random.randint(1,2)
-    bot = Player.Player(3-human)
+    bot = Hybrid.HybridPlayer(3-human)
     actual = random.randint(1,2)
     
     while True: # Game Loop
@@ -117,10 +119,12 @@ def human_vs_ai():
 
 def ai_vs_ai():
     N = get_size()
-    board = HexBoard(N)
+    board = HexBoard.HexBoard(N)
     act = random.randint(1,2)
-    bot1 = Player(PLAYER_1)
-    bot2 = Player(PLAYER_2)
+    # bot1 = Hybrid.HybridPlayer(PLAYER_1)
+    # bot2 = Hybrid.HybridPlayer(PLAYER_2)
+    bot1 = Smart_player.Player(PLAYER_1)
+    bot2 = Smart_player.Player(PLAYER_2)
 
     while True:
         print_board(board)
@@ -139,12 +143,13 @@ def ai_vs_ai():
             board.pretty_print()
             print_path(board,PLAYER_2)
             break
-        
-def print_path(board,player_id):
+       
+def print_path(
+        board,player_id):
     N = board.size
     _,parent = board.bfs(player_id)
     last = (0,N) if player_id is PLAYER_1 else (N,0)
-    q = [parent[last]]
+    q = []
     while q:
         v = q.pop()
         if parent[v] is not None:
@@ -154,9 +159,38 @@ def print_path(board,player_id):
     print_board(board,msg=f'\n--> Gana el jugador {RED + 'rojo' if player_id == PLAYER_1 else BLUE + 'azul'}{RESET}.')
 # endregion
 
-
 choice = game_selection()
 match(choice):
     case 1: human_vs_human()
     case 2: human_vs_ai()
     case 3: ai_vs_ai()
+
+# hexboard = HexBoard.HexBoard(5)
+# player = Player.Player(2)
+# board = hexboard.board
+# board[0][1]=2
+# board[1][1]=2
+# board[2][1]=2
+# board[3][1]=2
+# board[0][0]=2
+
+# board[1][0]=1
+# board[2][0]=1
+# board[3][0]=1
+# # board[0][0]=1
+# print(board)
+# hexboard.board = board
+# hexboard.pretty_print()
+# print(hexboard.heuristic_value_dijkstra(2))
+# print(hexboard.heuristic_value_dijkstra(1))
+# print(player.evaluate(hexboard))
+# print(player.minimax(hexboard,float('-inf'), float('inf'), True,1))
+# print(player.play(hexboard))
+
+# print(hexboard.check_connection(1))
+# print(hexboard.check_connection(2))
+
+
+
+
+
