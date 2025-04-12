@@ -1,9 +1,9 @@
-import numpy as np
-from typing import Tuple
-import Player
-import HexBoard
+import numpy
+import heapq
+from player import Player
+from hexboard import HexBoard
 
-class Player:
+class Smart_Player(Player):
     def __init__(self, player_id: int):
         super().__init__(player_id)
         self.opponent_id = 3 - player_id
@@ -22,8 +22,8 @@ class Player:
         best_move = None
         best_score = float('-inf')
         
-        # los movimientos a revisar son los relevantes, los carnanos a los ya colocados por ambos jugadores
-        moves = board.get_relevant_moves()
+        # los movimientos a revisar son los relevantes, los cernanos a los ya colocados por ambos jugadores
+        moves = self.get_relevant_moves(board=board)
         
         
         if self.player_id == 1:  
@@ -41,7 +41,7 @@ class Player:
                 return move
                 
             # si mi enemigo gana con ese movimiento, pues no puede hacerse, hay que bloquear esa vaina.
-            for opp_move in board.get_relevant_moves():
+            for opp_move in self.get_relevant_moves(board=board):
                 if opp_move == move:
                     continue
                 test_board = board.clone()
@@ -59,16 +59,15 @@ class Player:
         
         return best_move
     
-
     def evaluate(self, board) -> float:
-        """Evaluates the current board position from this player's perspective"""
+        """devuelve la evaluacion del tablero actual"""
         my_id = self.player_id
         opp_id = self.opponent_id
         size = board.size
         
        
-        my_dist = board.heuristic_value_dijkstra(my_id)
-        opp_dist = board.heuristic_value_dijkstra(opp_id)
+        my_dist = self.heuristic_value_dijkstra(my_id,board)
+        opp_dist = self.heuristic_value_dijkstra(opp_id,board)
         
         
         if my_dist == 0:
@@ -109,7 +108,7 @@ class Player:
                         
                     
                     adjacent_friends = 0
-                    for ni, nj in board.adj(i, j):
+                    for ni, nj in self.adj(board=board,row=i, col=j):
                         if board.board[ni][nj] == my_id:
                             adjacent_friends += 1
                     
@@ -129,7 +128,7 @@ class Player:
                         progress_value = i / (size - 1)
                         
                     adjacent_friends = 0
-                    for ni, nj in board.adj(i, j):
+                    for ni, nj in self.adj(board=board,row=i, col=j):
                         if board.board[ni][nj] == opp_id:
                             adjacent_friends += 1
                     
@@ -141,7 +140,7 @@ class Player:
         return base_score * 3 + territory_score
     
     def minimax(self, board, alpha, beta, maximizing, depth) -> float:
-        """Returns the best outcome from future decisions using alpha-beta pruning"""
+        """evalua el tablero luego de haber seleccionado una casilla"""
         board_hash = hash(board.board.tobytes())
         
         
@@ -160,7 +159,7 @@ class Player:
             self.transposition_table[board_hash] = (0, eval_score)
             return eval_score
             
-        moves = board.get_relevant_moves()
+        moves = self.get_relevant_moves(board=board)
         
         
         if not moves:
@@ -169,13 +168,13 @@ class Player:
             return eval_score
             
       
-        if maximizing and self.player_id == 1:  # Red wants east progress
+        if maximizing and self.player_id == 1:  
             moves.sort(key=lambda m: (m[1], -abs(m[0] - board.size//2)), reverse=True)
-        elif maximizing and self.player_id == 2:  # Blue wants south progress
+        elif maximizing and self.player_id == 2:  
             moves.sort(key=lambda m: (m[0], -abs(m[1] - board.size//2)), reverse=True)
-        elif not maximizing and self.opponent_id == 1:  # Red wants east progress
+        elif not maximizing and self.opponent_id == 1:  
             moves.sort(key=lambda m: (m[1], -abs(m[0] - board.size//2)), reverse=True)
-        elif not maximizing and self.opponent_id == 2:  # Blue wants south progress
+        elif not maximizing and self.opponent_id == 2:  
             moves.sort(key=lambda m: (m[0], -abs(m[1] - board.size//2)), reverse=True)
         
         current_player = self.player_id if maximizing else self.opponent_id
@@ -230,3 +229,72 @@ class Player:
             
             self.transposition_table[board_hash] = (depth, best_value)
             return best_value
+        
+    def heuristic_value_dijkstra(self, player_id: int,board:HexBoard) -> int:
+        """Devuelve el valor del estado del tablero(el menor camino para unir los extremos)"""
+        size = board.size
+        distance = numpy.full((size,size), float('inf')) #matriz de distancias
+        visited = numpy.full((size,size), False) 
+        heap=[]
+
+        for position in self.adj(board=board,id=player_id): #esto es parecido al check connection, dependiendo del jugador se le dan los adyacentes correspondientes
+            row, col = position
+            if board.board[row][col] == player_id: distance[row][col]=0
+            if board.board[row][col] == 0 : distance[row][col] = 1
+            heapq.heappush(heap,(distance[row][col],position))
+
+        while heap:
+            cost, position = heapq.heappop(heap)
+            row, col = position
+            if visited[row][col]: continue
+            
+            visited[row][col] = True
+            if player_id == 1 and col == size - 1 : return cost
+            if player_id == 2 and row == size - 1 : return cost
+
+            for position_ in self.adj(board=board,row = row, col = col):
+                roww, coll = position_
+                if  visited[roww][coll] or board.board[roww][coll] == 3-player_id: continue
+
+                new_cost = cost if board.board[roww][coll] == player_id else cost+1
+                if new_cost < distance[roww][coll]: 
+                    heapq.heappush(heap, (new_cost, position_))
+                    distance[roww][coll]= new_cost
+
+            
+        return float('inf') #si no devuelve nada por alla es porque no hay camino.
+
+    def is_valid(self, row: int, col: int, board:HexBoard):
+        return 0 <= row < board.size and 0 <= col < board.size
+    
+    def adj(self,board:HexBoard, row: int = 0, col: int = 0, id: int = 0 ):
+        """Devuelve una lista de las casillas adyacentes a la casilla que se introduzca como argumento"""
+        if id == 1: return [(i,0) for i in range(board.size)]
+        elif id == 2: return [(0,i) for i in range(board.size)]
+           
+        adj =  [(row, col-1), (row, col+1), (row-1, col+1),(row - 1, col) , (row+1, col), (row+1, col-1)]
+        
+        return [ (x,y) for x,y in adj if self.is_valid(x,y,board)]
+
+    def get_relevant_moves(self,board: HexBoard, radius=2) -> list:
+        """Devuelve las casillas vacías dentro de un radio de fichas ya colocadas"""
+        relevant = set()
+        for i in range(board.size):
+            for j in range(board.size):
+                if board.board[i][j] != 0:
+                    for dx in range(-radius, radius + 1):
+                        for dy in range(-radius, radius + 1):
+                            ni, nj = i + dx, j + dy
+                            if self.is_valid(board=board, row=ni, col=nj) and board.board[ni][nj] == 0:
+                                relevant.add((ni, nj))
+        return list(relevant) if relevant else board.get_possible_moves()
+
+
+
+
+
+
+
+
+
+

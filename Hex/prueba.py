@@ -1,11 +1,9 @@
-import HexBoard
-import Player
 import os
 import re
 import random
-import Hybrid
 import time
-import Smart_player
+from hexboard import HexBoard
+from smart_player import Smart_Player
 
 # region GLOBALS
 
@@ -119,12 +117,12 @@ def human_vs_ai():
 
 def ai_vs_ai():
     N = get_size()
-    board = HexBoard.HexBoard(N)
+    board = HexBoard(N)
     act = random.randint(1,2)
     # bot1 = Hybrid.HybridPlayer(PLAYER_1)
     # bot2 = Hybrid.HybridPlayer(PLAYER_2)
-    bot1 = Smart_player.Player(PLAYER_1)
-    bot2 = Smart_player.Player(PLAYER_2)
+    bot1 = Smart_Player(PLAYER_1)
+    bot2 = Smart_Player(PLAYER_2)
 
     while True:
         print_board(board)
